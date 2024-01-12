@@ -44,6 +44,11 @@
     KTVHCLogDealloc(self);
 }
 
+/*
+ Get
+ http://qiniuuwmp3.changba.com/941946870.mp4/KTVHTTPCachePlaceHolder/KTVHTTPCacheLastPathComponent.mp4
+ */
+// 在 URL 里面, 除了原始的地址, 还有一些逻辑控制的信息. 
 - (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path
 {
     KTVHCLogHTTPConnection(@"%p, Receive request\nmethod : %@\npath : %@\nURL : %@", self, method, path, request.url);
@@ -58,6 +63,7 @@
     if (![URLString hasPrefix:@"http"]) {
         return [[HTTPErrorResponse alloc] initWithErrorCode:404];
     }
+    
     NSURL *URL = nil;
     if ([path containsString:[self.class URITokenLastPathComponent]]) {
         URL = [NSURL URLWithString:URLString];
@@ -84,6 +90,7 @@
     if ([URLString containsString:@".m3u"]) {
         return [[KTVHCHTTPHLSResponse alloc] initWithConnection:self dataRequest:dataRequest];
     }
+    
     return [[KTVHCHTTPResponse alloc] initWithConnection:self dataRequest:dataRequest];
 }
 

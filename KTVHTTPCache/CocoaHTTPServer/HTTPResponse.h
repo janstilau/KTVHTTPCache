@@ -147,3 +147,52 @@
  * There's a good chance that if your response is asynchronous and dynamic, it's also chunked.
  * If your response is chunked, you don't need to worry about range requests.
 **/
+
+/*
+ 对于实现自定义异步和/或分块响应的人，有重要提示：
+ HTTPConnection支持异步响应。在自定义响应类中，您只需异步生成响应，并调用HTTPConnection的responseHasAvailableData方法。
+ 
+ 您无需等到所有响应准备就绪后再调用此方法。例如，如果您以增量块生成响应，则可以在生成每个块后调用responseHasAvailableData。
+ 请参阅HTTPAsyncFileResponse类，了解如何执行此操作的示例。
+ 
+ HTTPConnection在响应请求时的正常事件流程如下：
+ 发送HTTP响应头
+ 通过readDataOfLength方法从响应获取数据
+ 将数据添加到asyncSocket的写入队列
+ 等待asyncSocket通知数据已发送
+ 通过readDataOfLength方法从响应获取更多数据
+ ...继续此循环，直到整个响应发送完毕
+ 
+ 
+ 对于异步响应，流程略有不同。
+ 首先，HTTPResponse有机会推迟发送HTTP响应头。
+ 这允许响应异步执行任何代码，以计算头的一部分。例如，响应可能需要生成一些自定义的头字段，
+ 或者响应可能需要在网络附加存储上查找资源。由于网络附加存储可能较慢，响应不知道是发送200还是404。
+ 在这种情况下，HTTPResponse只需实现delayResponseHeaders方法并返回YES。从此方法返回YES后，
+ HTTPConnection将等到响应调用其responseHasAvailableData方法。此发生后，HTTPConnection将再次查询delayResponseHeaders方法，
+ 以查看响应是否准备好发送头。
+ 
+ 此循环将继续，直到delayResponseHeaders方法返回NO。
+ 
+ 您应该只在关于头的一切都准备就绪时推迟发送响应头。
+ 异步生成响应主体不能成为推迟发送头的借口。
+ 在发送响应头后，HTTPConnection调用您的readDataOfLength方法。
+ 此时可能有可用数据，也可能没有。如果没有，请简单地返回nil。
+ 在生成新数据时，应稍后调用HTTPConnection的responseHasAvailableData。
+ 您无需跟踪何时在readDataOfLength方法中返回nil，或者调用了多少次responseHasAvailableData。
+ 只需在生成新数据时调用responseHasAvailableData，而在所请求范围内的readDataOfLength中没有可用数据时返回nil。
+ HTTPConnection将自动检测何时应请求新数据，并采取相应措施。
+ 还需注意HTTP服务器支持范围请求。
+ setOffset方法是强制性的，不能忽略。确保在readDataOfLength方法中考虑偏移量。
+ 还应该知道，HTTPConnection会自动对任何范围请求进行排序。
+ 因此，如果setOffset方法以值100被调用，那么可以安全地释放字节0-99。
+ HTTPConnection还可以帮助您保持内存占用较小。
+ 想象一下，您动态生成了一个10 MB的响应。您可能不想将所有这些数据加载到RAM中，
+ 并坐在那里等待HTTPConnection缓慢地将其通过网络发送出去。您只需要注意HTTPConnection通过readDataOfLength请求更多数据的时机。
+ 这是因为HTTPConnection永远不会允许asyncSocket的写入队列变得比READ_CHUNKSIZE字节大得多。
+ 您应该考虑如何利用这个事实，按需生成异步响应，同时保持内存占用较小，使应用程序运行迅捷。
+ 如果不提前知道content-length，您还应该实现isChunked方法。
+ 这意味着响应不会包含Content-Length头，而是使用"Transfer-Encoding: chunked"。
+ 如果响应是异步且动态的，有很大可能它也是分块的。
+ 如果响应是分块的，您无需担心范围请求。
+ */

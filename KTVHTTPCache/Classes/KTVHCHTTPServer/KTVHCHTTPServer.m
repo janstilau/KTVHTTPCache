@@ -42,9 +42,11 @@
 {
     if (self = [super init]) {
         KTVHCLogAlloc(self);
+        
         self.server = [[HTTPServer alloc] init];
         [self.server setConnectionClass:[KTVHCHTTPConnection class]];
         [self.server setType:@"_http._tcp."];
+        
         self.pingCondition = [[NSCondition alloc] init];
         self.pingQueue = dispatch_queue_create("KTVHCHTTPServer_pingQueue", DISPATCH_QUEUE_SERIAL);
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -92,6 +94,11 @@
     return [self URLWithOriginalURL:URL bindToLocalhost:YES];
 }
 
+/*
+ http://aliuwmp3.changba.com/userdata/video/3B1DDE764577E0529C33DC5901307461.mp4
+ http://localhost:52285/http%3A%2F%2Faliuwmp3%2Echangba%2Ecom%2Fuserdata%2Fvideo%2F3B1DDE764577E0529C33DC5901307461%2Emp4/KTVHTTPCachePlaceHolder/KTVHTTPCacheLastPathComponent.mp4
+ http://localhost:52564/http://aliuwmp3.changba.com/userdata/video/3B1DDE764577E0529C33DC5901307461.mp4/KTVHTTPCachePlaceHolder/KTVHTTPCacheLastPathComponent.mp4
+ */
 - (NSURL *)URLWithOriginalURL:(NSURL *)URL bindToLocalhost:(BOOL)bindToLocalhost
 {
     if (!URL || URL.isFileURL || URL.absoluteString.length == 0) {
@@ -104,6 +111,7 @@
                            bindToLocalhost ? @"localhost" : [self getPrimaryIPAddress],
                            self.server.listeningPort,
                            [[KTVHCURLTool tool] URLEncode:URL.absoluteString],
+//                           URL.absoluteString,
                            [KTVHCHTTPConnection URITokenPlaceHolder],
                            [KTVHCHTTPConnection URITokenLastPathComponent],
                            URL.pathExtension.length > 0 ? [NSString stringWithFormat:@".%@", URL.pathExtension] : @""];

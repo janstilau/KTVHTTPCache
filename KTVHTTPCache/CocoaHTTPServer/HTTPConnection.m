@@ -1126,6 +1126,7 @@ static NSMutableArray *recentNonces;
 {
 	if ([httpResponse respondsToSelector:@selector(delayResponseHeaders)])
 	{
+        // 如果是异步的, 那么会等待 Resposne 生成对应的内容之后, 才开始发送数据.
 		if ([httpResponse delayResponseHeaders])
 		{
 			return;
@@ -1275,7 +1276,6 @@ static NSMutableArray *recentNonces;
 				if ([data length] > 0)
 				{
 					[responseDataSizes addObject:[NSNumber numberWithUnsignedInteger:[data length]]];
-					
 					long tag = [data length] == range.length ? HTTP_RESPONSE : HTTP_PARTIAL_RANGE_RESPONSE_BODY;
 					[asyncSocket writeData:data withTimeout:TIMEOUT_WRITE_BODY tag:tag];
 				}
@@ -2494,6 +2494,7 @@ static NSMutableArray *recentNonces;
  * 
  * This informs us that the response object has generated more data that we may be able to send.
 **/
+//
 - (void)responseHasAvailableData:(NSObject<HTTPResponse> *)sender
 {
 	HTTPLogTrace();

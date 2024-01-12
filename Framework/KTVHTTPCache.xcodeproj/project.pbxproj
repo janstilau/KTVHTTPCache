@@ -255,17 +255,17 @@
 			isa = PBXGroup;
 			children = (
 				4EE21B702B4847FD008EFC11 /* HTTPAsyncFileResponse.h */,
-				4EE21B712B4847FD008EFC11 /* HTTPErrorResponse.m */,
-				4EE21B722B4847FD008EFC11 /* HTTPDataResponse.m */,
-				4EE21B732B4847FD008EFC11 /* HTTPRedirectResponse.h */,
-				4EE21B742B4847FD008EFC11 /* HTTPDynamicFileResponse.m */,
-				4EE21B752B4847FD008EFC11 /* HTTPFileResponse.m */,
 				4EE21B762B4847FD008EFC11 /* HTTPAsyncFileResponse.m */,
-				4EE21B772B4847FD008EFC11 /* HTTPRedirectResponse.m */,
 				4EE21B782B4847FD008EFC11 /* HTTPDataResponse.h */,
-				4EE21B792B4847FD008EFC11 /* HTTPErrorResponse.h */,
-				4EE21B7A2B4847FD008EFC11 /* HTTPFileResponse.h */,
+				4EE21B722B4847FD008EFC11 /* HTTPDataResponse.m */,
 				4EE21B7B2B4847FD008EFC11 /* HTTPDynamicFileResponse.h */,
+				4EE21B742B4847FD008EFC11 /* HTTPDynamicFileResponse.m */,
+				4EE21B792B4847FD008EFC11 /* HTTPErrorResponse.h */,
+				4EE21B712B4847FD008EFC11 /* HTTPErrorResponse.m */,
+				4EE21B7A2B4847FD008EFC11 /* HTTPFileResponse.h */,
+				4EE21B752B4847FD008EFC11 /* HTTPFileResponse.m */,
+				4EE21B732B4847FD008EFC11 /* HTTPRedirectResponse.h */,
+				4EE21B772B4847FD008EFC11 /* HTTPRedirectResponse.m */,
 			);
 			path = Responses;
 			sourceTree = "<group>";

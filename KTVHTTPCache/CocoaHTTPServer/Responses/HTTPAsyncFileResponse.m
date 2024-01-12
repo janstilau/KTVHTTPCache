@@ -139,6 +139,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 {
 	HTTPLogTrace();
 	
+    // 这里, 将 filepath 的打开结果, 给了 fileFD. 所以 source 里面使用 fileFD 和使用 path 没有太多的区别.
 	fileFD = open([filePath UTF8String], (O_RDONLY | O_NONBLOCK));
 	if (fileFD == NULL_FD)
 	{
@@ -153,6 +154,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 	readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, fileFD, 0, readQueue);
 	
 	
+    // 每次, 读取一部分数据之后, 然后进行停止.
+    // 等待 socket 发送了相关的数据完毕之后, 才进行下一次的文件读取和发送.
 	dispatch_source_set_event_handler(readSource, ^{
 		
 		HTTPLogTrace2(@"%@: eventBlock - fd[%i]", THIS_FILE, fileFD);
@@ -225,10 +228,10 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 			readOffset += result;
 			readBufferOffset += result;
 			
+            // 每次读完了之后, 都停止读取, 然后告诉 connection 可以发送数据了.
 			[self pauseReadSource];
 			[self processReadBuffer];
 		}
-		
 	});
 	
 	int theFileFD = fileFD;
@@ -315,6 +318,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 {
 	HTTPLogTrace2(@"%@[%p]: readDataOfLength:%lu", THIS_FILE, self, (unsigned long)length);
 	
+    // 发送数据, 会到这里, 首先读取从文件读取完的数据, 进行发送.
+    // 然后没有数据了, 就重新打开读取文件的流程. 读取完毕之后, 再次进行发送.
 	if (data)
 	{
 		NSUInteger dataLength = [data length];
