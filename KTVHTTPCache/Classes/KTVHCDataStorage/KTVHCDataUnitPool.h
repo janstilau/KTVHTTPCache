@@ -12,6 +12,7 @@
 
 @interface KTVHCDataUnitPool : NSObject
 
+// 只可以使用 pool 这种方式, 可以使用 NS_UNAVAILABLE 明确的告知, 不能使用一般的初始化. 
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 

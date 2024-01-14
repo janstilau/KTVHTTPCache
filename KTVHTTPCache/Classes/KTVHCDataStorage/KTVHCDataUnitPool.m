@@ -1,11 +1,3 @@
-//
-//  KTVHCDataUnitPool.m
-//  KTVHTTPCache
-//
-//  Created by Single on 2017/8/11.
-//  Copyright © 2017年 Single. All rights reserved.
-//
-
 #import "KTVHCDataUnitPool.h"
 #import "KTVHCDataUnitQueue.h"
 #import "KTVHCData+Internal.h"
@@ -20,6 +12,7 @@
 @property (nonatomic, strong) NSRecursiveLock *coreLock;
 @property (nonatomic, strong) KTVHCDataUnitQueue *unitQueue;
 @property (nonatomic, strong) dispatch_queue_t archiveQueue;
+
 @property (nonatomic) int64_t expectArchiveIndex;
 @property (nonatomic) int64_t actualArchiveIndex;
 
@@ -228,6 +221,8 @@
     self.expectArchiveIndex += 1;
     int64_t expectArchiveIndex = self.expectArchiveIndex;
     [self unlock];
+    
+    // 这里的写法, 和自己的写法是一样的, 就是不要每一次都触发缓存.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), self.archiveQueue, ^{
         [self lock];
         if (self.expectArchiveIndex == expectArchiveIndex) {
@@ -256,6 +251,7 @@
 
 #pragma mark - UIApplicationWillTerminateNotification
 
+// 在 App 生命周期的各个时间, 进行了缓存的处理更新. 
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
     [self archiveIfNeeded];

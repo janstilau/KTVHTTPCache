@@ -1,11 +1,3 @@
-//
-//  KTVHCDataUnit.m
-//  KTVHTTPCache
-//
-//  Created by Single on 2017/8/11.
-//  Copyright © 2017年 Single. All rights reserved.
-//
-
 #import "KTVHCDataUnit.h"
 #import "KTVHCPathTool.h"
 #import "KTVHCURLTool.h"
@@ -81,6 +73,7 @@
     }
     NSMutableArray *removal = [NSMutableArray array];
     for (KTVHCDataUnitItem *obj in self.unitItemsInternal) {
+        // 在初始化的时候, 如果没有数据, 直接就删除了这块的文件, 这是废数据.
         if (obj.length == 0) {
             [KTVHCPathTool deleteFileAtPath:obj.absolutePath];
             [removal addObject:obj];
@@ -239,13 +232,14 @@
         return;
     }
     [self lock];
+    // 直接把整个目录都删除了.
     NSString *path = [KTVHCPathTool directoryPathWithURL:self.URL];
     [KTVHCPathTool deleteDirectoryAtPath:path];
     KTVHCLogDataUnit(@"%p, Delete files", self);
     [self unlock];
 }
 
-// 这里应该是, 将几个连续的文件, 写到一个文件里面去了.
+// 将所有的数据, 合并成为一份数据.
 - (BOOL)mergeFilesIfNeeded
 {
     [self lock];

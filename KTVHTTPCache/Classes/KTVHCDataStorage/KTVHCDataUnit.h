@@ -24,6 +24,8 @@
 
 - (instancetype)initWithURL:(NSURL *)URL;
 
+// 所有的数据, 都是 Readonly 的.
+// 所有的修改, 都是通过方法进行的修改. 
 @property (nonatomic, copy, readonly) NSError *error;
 
 @property (nonatomic, copy, readonly) NSURL *URL;
