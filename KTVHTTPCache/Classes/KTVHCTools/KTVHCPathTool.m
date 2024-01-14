@@ -46,12 +46,14 @@
     return [self converToAbsoultePath:filePath];
 }
 
+// 这个方法有副作用. 进行了相关位置的文件的创建. 
 + (NSString *)filePathWithURL:(NSURL *)URL offset:(long long)offset
 {
     NSString *baseFileName = [[KTVHCURLTool tool] keyWithURL:URL];
     NSString *directoryPath = [self directoryPathWithURL:URL];
     int number = 0;
     NSString *filePath = nil;
+    // 同样的一段 Offset, 这里居然有好几的存储的地方. 
     while (!filePath) {
         NSString *fileName = [NSString stringWithFormat:@"%@_%lld_%d", baseFileName, offset, number];
         NSString *currentFilePath = [directoryPath stringByAppendingPathComponent:fileName];
@@ -108,6 +110,7 @@
     }
 }
 
+// 这里就是触发一下, 缓存目录的创建逻辑.
 + (void)createDirectoryAtPath:(NSString *)path
 {
     if (path.length <= 0) {

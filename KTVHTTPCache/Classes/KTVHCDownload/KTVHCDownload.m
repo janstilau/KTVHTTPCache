@@ -125,14 +125,17 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
     return mRequest;;
 }
 
+// 真正的对于资源的下载动作, 是在这里.
 - (NSURLSessionTask *)downloadWithRequest:(KTVHCDataRequest *)request delegate:(id<KTVHCDownloadDelegate>)delegate
 {
     [self lock];
     NSURLRequest *mRequest = [self requestWithDataRequest:request];
+    // 使用了 data task, 来做各个请求的实际的请求类.
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mRequest];
     [self.requestDictionary setObject:request forKey:task];
     [self.delegateDictionary setObject:delegate forKey:task];
     task.priority = 1.0;
+    // 开启了下载任务之后, 立马就进行了开启.
     [task resume];
     KTVHCLogDownload(@"%p, Add Request\nrequest : %@\nURL : %@\nheaders : %@\nHTTPRequest headers : %@\nCount : %d", self, request, request.URL, request.headers, mRequest.allHTTPHeaderFields, (int)self.delegateDictionary.count);
     [self beginBackgroundTaskAsync];
@@ -148,6 +151,7 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
         error = [self.errorDictionary objectForKey:task];
     }
     id<KTVHCDownloadDelegate> delegate = [self.delegateDictionary objectForKey:task];
+    // 下载完成了之后, 通知上层逻辑控件.
     [delegate ktv_download:self didCompleteWithError:error];
     [self.delegateDictionary removeObjectForKey:task];
     [self.requestDictionary removeObjectForKey:task];
@@ -172,6 +176,7 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
                                                     request:task.currentRequest
                                                    response:task.response];
         } else {
+            // 获取到了正常的 Response, 组织出来业务的 KTVHCDataResponse
             dataRequest = [self.requestDictionary objectForKey:task];
             dataResponse = [[KTVHCDataResponse alloc] initWithURL:dataRequest.URL headers:HTTPURLResponse.allHeaderFields];
         }
@@ -181,6 +186,7 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
                                                response:task.response];
     }
     if (!error) {
+        // 这里判断的是, 是否对应的数据类型是非法的.
         BOOL vaild = NO;
         if (dataResponse.contentType.length > 0) {
             for (NSString *obj in self.acceptableContentTypes) {
@@ -188,6 +194,7 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
                     vaild = YES;
                 }
             }
+            // Disposer 处理者, 清理者.
             if (!vaild && self.unacceptableContentTypeDisposer) {
                 vaild = self.unacceptableContentTypeDisposer(dataRequest.URL, dataResponse.contentType);
             }
@@ -212,8 +219,10 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
             return desireLength + [KTVHCDataStorage storage].totalCacheLength - [KTVHCDataStorage storage].maxCacheLength;
         };
         long long length = getDeletionLength(dataResponse.contentLength);
+        // 这里是需要进行缓存文件的删除工作.
         if (length > 0) {
             [[KTVHCDataUnitPool pool] deleteUnitsWithLength:length];
+            // 看来上面的操作, 是真正的删除操作.
             length = getDeletionLength(dataResponse.contentLength);
             if (length > 0) {
                 error = [KTVHCError errorForNotEnoughDiskSpace:dataResponse.totalLength
@@ -223,6 +232,9 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
             }
         }
     }
+    // 当, 收到 Response 的时候, 会触发业务的一些函数处理.
+    // 比如, 类型不匹配, 缓存不够, 当有了这些触发之后, 就取消了后面的流程处理了.
+    // 以为在 CompleteWithError 里面, 需要用到这些错误, 所以就提前进行了存储.
     if (error) {
         KTVHCLogDownload(@"%p, Invaild response\nError : %@", self, error);
         [self.errorDictionary setObject:error forKey:task];
@@ -239,6 +251,7 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task willPerformHTTPRedirection:(NSHTTPURLResponse *)response newRequest:(NSURLRequest *)request completionHandler:(void (^)(NSURLRequest * _Nullable))completionHandler
 {
     [self lock];
+    // 为啥 Log 还需要 lock 一下呢.
     KTVHCLogDownload(@"%p, Perform HTTP redirection\nresponse : %@\nrequest : %@", self, response, request);
     completionHandler(request);
     [self unlock];
@@ -279,6 +292,7 @@ NSString * const KTVHCContentTypeBinaryOctetStream      = @"binary/octet-stream"
 - (void)beginBackgroundTaskIfNeeded
 {
     [self lock];
+    // 如果, 当前没有开启后台任务, 又有了后台加载的需求.
     if (self.backgroundTask == UIBackgroundTaskInvalid && self.delegateDictionary.count > 0) {
         __weak typeof(self) weakSelf = self;
         self.backgroundTask = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{

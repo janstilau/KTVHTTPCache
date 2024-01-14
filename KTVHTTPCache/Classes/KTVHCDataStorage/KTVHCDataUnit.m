@@ -245,6 +245,7 @@
     [self unlock];
 }
 
+// 这里应该是, 将几个连续的文件, 写到一个文件里面去了.
 - (BOOL)mergeFilesIfNeeded
 {
     [self lock];

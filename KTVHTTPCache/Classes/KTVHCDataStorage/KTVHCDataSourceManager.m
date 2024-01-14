@@ -122,6 +122,7 @@
         [self unlock];
         return nil;
     }
+    // 使用 self.currentSource 来读取数据.
     NSData *data = [self.currentSource readDataOfLength:length];
     self->_readedLength += data.length;
     KTVHCLogDataSourceManager(@"%p, Read data : %lld", self, (long long)data.length);
@@ -206,6 +207,7 @@
 - (void)ktv_networkSourceDidFinisheDownload:(KTVHCDataNetworkSource *)networkSource
 {
     [self lock];
+    // 当, 一个 Network 下载完毕之后, 需要触发下一个 Netowrk Source 下载资源.
     self.currentNetworkSource = [self nextNetworkSource];
     [self.currentNetworkSource prepare];
     [self unlock];

@@ -12,6 +12,7 @@
 
 @implementation KTVHCDataResponse
 
+// 在进行初始化的时候, 就将所需要的各种数据, 通过各种字段进行了获取. 
 - (instancetype)initWithURL:(NSURL *)URL headers:(NSDictionary *)headers
 {
     if (self = [super init]) {

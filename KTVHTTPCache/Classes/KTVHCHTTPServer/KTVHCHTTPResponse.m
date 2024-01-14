@@ -42,6 +42,8 @@
 
 #pragma mark - HTTPResponse
 
+// 对于 Connection 来说, 并不是一定会读取到 length 长度的数据.
+// 这个方法会大量的调用.
 - (NSData *)readDataOfLength:(NSUInteger)length
 {
     NSData *data = [self.reader readDataOfLength:length];
@@ -103,6 +105,8 @@
 
 #pragma mark - KTVHCDataReaderDelegate
 
+// 支持 Delay 的 Response, 在对应的事件时候, 需要主动地调用 responseHasAvailableData
+// 使得 connection 的内部, 可以继续完成信息的传递.
 - (void)ktv_readerDidPrepare:(KTVHCDataReader *)reader
 {
     KTVHCLogHTTPResponse(@"%p, Prepared", self);

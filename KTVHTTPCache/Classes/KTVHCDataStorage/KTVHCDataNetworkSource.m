@@ -24,6 +24,7 @@
 
 @property (nonatomic) long long downloadLength;
 @property (nonatomic) BOOL downloadCalledComplete;
+// 这就是一个标志位, 代表着当前客户端需要数据, 但是当前没有准备好数据. 当下载了数据之后, 需要继续向客户端传输数据.
 @property (nonatomic) BOOL callHasAvailableData;
 @property (nonatomic) BOOL calledPrepare;
 
@@ -93,6 +94,7 @@
     [self unlock];
 }
 
+// 在 readDataOfLength 中, 使用到了 self.readingHandle
 - (NSData *)readDataOfLength:(NSUInteger)length
 {
     [self lock];
@@ -152,6 +154,7 @@
             KTVHCLogDataNetworkSource(@"%p, Complete with cancel\nError : %@", self, error);
         }
     } else if (self.downloadLength >= KTVHCRangeGetLength(self.response.contentRange)) {
+        // 下载完毕了. 通知上层控件.
         KTVHCLogDataNetworkSource(@"%p, Complete and finisehed", self);
         if ([self.delegate respondsToSelector:@selector(ktv_networkSourceDidFinisheDownload:)]) {
             [KTVHCDataCallback callbackWithQueue:self.delegateQueue block:^{
@@ -175,6 +178,7 @@
     NSString *path = [KTVHCPathTool filePathWithURL:self.request.URL offset:self.request.range.start];
     self.unitItem = [[KTVHCDataUnitItem alloc] initWithPath:path offset:self.request.range.start];
     KTVHCDataUnit *unit = [[KTVHCDataUnitPool pool] unitWithURL:self.request.URL];
+    // 下载完毕了, 就将下载的这部分数据, 当做了 DataItem 来进行处理. 
     [unit insertUnitItem:self.unitItem];
     KTVHCLogDataNetworkSource(@"%p, Receive response\nResponse : %@\nUnit : %@\nUnitItem : %@", self, response, unit, self.unitItem);
     [unit workingRelease];
@@ -184,6 +188,7 @@
     [self unlock];
 }
 
+// 在这里, 做数据的拼接工作. 
 - (void)ktv_download:(KTVHCDownload *)download didReceiveData:(NSData *)data
 {
     [self lock];
@@ -192,6 +197,7 @@
         return;
     }
     @try {
+        // 当收到了数据之后, 不断地使用 writingHandle, 将数据添加到文件中.
         NSError *error = nil;
         if (@available(iOS 13.0, *)) {
             [self.writingHandle writeData:data error:&error];
