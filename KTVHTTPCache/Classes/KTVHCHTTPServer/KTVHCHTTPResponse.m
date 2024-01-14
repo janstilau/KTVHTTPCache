@@ -26,6 +26,7 @@
     if (self = [super init]) {
         KTVHCLogAlloc(self);
         self.connection = connection;
+        // dataRequest 里面, 还是控制了 Range 的值. 
         self.reader = [[KTVHCDataStorage storage] readerWithRequest:dataRequest];
         self.reader.delegate = self;
         [self.reader prepare];
@@ -42,8 +43,6 @@
 
 #pragma mark - HTTPResponse
 
-// 对于 Connection 来说, 并不是一定会读取到 length 长度的数据.
-// 这个方法会大量的调用.
 - (NSData *)readDataOfLength:(NSUInteger)length
 {
     NSData *data = [self.reader readDataOfLength:length];

@@ -5,6 +5,7 @@
 //  Created by Gary Zhao on 2024/1/7.
 //  Copyright © 2024 Single. All rights reserved.
 //
+// 刚写的, 不成熟吧. 
 
 #import "KTVHCHTTPHLSResponse.h"
 #import "KTVHCHTTPConnection.h"
@@ -35,6 +36,7 @@
         KTVHCLogHTTPHLSResponse(@"%p, Create response\nrequest : %@", self, dataRequest);
         self.connection = connection;
         self.unit = [[KTVHCDataUnitPool pool] unitWithURL:dataRequest.URL];
+        
         if (self.unit.totalLength == 0) {
             static NSURLSession *session = nil;
             static dispatch_once_t onceToken;

@@ -71,6 +71,7 @@
     }
     self->_calledPrepare = YES;
     KTVHCLogDataNetworkSource(@"%p, Call prepare", self);
+    // 开启了一个网络任务, 进行真正的数据下载. 
     self.downlaodTask = [[KTVHCDownload download] downloadWithRequest:self.request delegate:self];
     [self unlock];
 }

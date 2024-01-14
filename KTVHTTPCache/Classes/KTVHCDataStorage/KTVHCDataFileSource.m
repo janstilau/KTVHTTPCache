@@ -33,6 +33,7 @@
     {
         KTVHCLogAlloc(self);
         self->_path = path;
+        // 这个 Range 没用, 外界就是使用的 readRange
         self->_range = range;
         self->_readRange = readRange;
         self.coreLock = [[NSLock alloc] init];
@@ -53,6 +54,7 @@
         [self unlock];
         return;
     }
+    // 对于已经缓存的 DataSource 来说.
     KTVHCLogDataFileSource(@"%p, Call prepare", self);
     self.readingHandle = [NSFileHandle fileHandleForReadingAtPath:self.path];
     @try {
@@ -86,6 +88,7 @@
     [self unlock];
 }
 
+// 真正的读取数据的部分. 
 - (NSData *)readDataOfLength:(NSUInteger)length
 {
     [self lock];
@@ -106,6 +109,7 @@
         if (data.length > 0) {
             KTVHCLogDataFileSource(@"%p, Read data : %lld, %lld, %lld", self, (long long)data.length, self.readedLength, readLength);
         }
+        // 有可能没读完的. 
         if (self.readedLength >= readLength) {
             KTVHCLogDataFileSource(@"%p, Read data did finished", self);
             [self destoryReadingHandle];

@@ -32,6 +32,7 @@
         KTVHCLogAlloc(self);
         // unit 是从 KTVHCDataUnitPool 里面提取的. 是一个公共资源.
         self.unit = [[KTVHCDataUnitPool pool] unitWithURL:request.URL];
+        
         self->_request = [request newRequestWithTotalLength:self.unit.totalLength];
         self.coreLock = [[NSRecursiveLock alloc] init];
         self.delegateQueue = dispatch_queue_create("KTVHCDataReader_delegateQueue", DISPATCH_QUEUE_SERIAL);
@@ -74,6 +75,7 @@
     }
     self->_closed = YES;
     KTVHCLogDataReader(@"%p, Call close", self);
+    
     [self.sourceManager close];
     [self.unit workingRelease];
     self.unit = nil;
@@ -96,6 +98,7 @@
         return nil;
     }
     NSAssert(self->_calledPrepare == YES, @"Prepare api must be called befor read data.");
+    // connection 会多次触发这里. 如果读取完了, 那么其实 connection 就陷入了等待的状态了. 
     NSData *data = [self.sourceManager readDataOfLength:length];
     if (data.length > 0) {
         self->_readedLength += data.length;
@@ -119,11 +122,14 @@
     NSMutableArray<KTVHCDataNetworkSource *> *networkSources = [NSMutableArray array];
     long long min = self.request.range.start;
     long long max = self.request.range.end;
+    // 0-1. 对于每一个 Reader 来说, 它的其实是和他的 DataRequest 绑定的.
+    // 然后, 这个 URL 对应的 Unit 里面, 其实是存储了当前已经存储的部分了的.
     NSArray *unitItems = self.unit.unitItems;
     for (KTVHCDataUnitItem *item in unitItems) {
         long long itemMin = item.offset;
         long long itemMax = item.offset + item.length - 1;
         if (itemMax < min || itemMin > max) {
+            // 不挨着.
             continue;
         }
         if (min > itemMin) {
@@ -168,10 +174,12 @@
     NSMutableArray<id<KTVHCDataSource>> *sources = [NSMutableArray array];
     [sources addObjectsFromArray:fileSources];
     [sources addObjectsFromArray:networkSources];
+    // 上面的操作完成了之后, 其实就是文件 source, net source 进行了组装.
     self.sourceManager = [[KTVHCDataSourceManager alloc] initWithSources:sources delegate:self delegateQueue:self.internalDelegateQueue];
     [self.sourceManager prepare];
 }
 
+// KTVHCDataSourceManager 在数据加载完毕, 或者
 - (void)ktv_sourceManagerDidPrepare:(KTVHCDataSourceManager *)sourceManager
 {
     [self lock];
@@ -251,6 +259,7 @@
             KTVHCLogDataReader(@"%p, Callback for prepared - Begin", self);
             [KTVHCDataCallback callbackWithQueue:self.delegateQueue block:^{
                 KTVHCLogDataReader(@"%p, Callback for prepared - End", self);
+                // 触发 response 的 responseHasAvailableData
                 [self.delegate ktv_readerDidPrepare:self];
             }];
         }

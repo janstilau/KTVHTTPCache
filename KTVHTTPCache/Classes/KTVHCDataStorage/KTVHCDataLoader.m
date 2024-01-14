@@ -12,6 +12,7 @@
 
 @interface KTVHCDataLoader () <KTVHCDataReaderDelegate>
 
+// Loader 就是使用的 KTVHCDataReader. 
 @property (nonatomic, strong) KTVHCDataReader *reader;
 
 @end

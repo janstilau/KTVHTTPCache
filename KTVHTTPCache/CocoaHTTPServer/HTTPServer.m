@@ -398,6 +398,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_INFO; // | HTTP_LOG_FLAG_TRACE;
 #pragma mark Server Control
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// 所谓的开启一个服务器, 就是使用 Socket 开始监听外界的连接请求了. 
 - (BOOL)start:(NSError **)errPtr
 {
 	HTTPLogTrace();
@@ -447,6 +448,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_INFO; // | HTTP_LOG_FLAG_TRACE;
 		
 		if (!keepExistingConnections)
 		{
+            // 关闭服务器的时候, 要把所有的
 			// Stop all HTTP connections the server owns
 			[connectionsLock lock];
 			for (HTTPConnection *connection in connections)

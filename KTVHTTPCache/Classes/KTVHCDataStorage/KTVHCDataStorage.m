@@ -39,6 +39,7 @@
     return completeURL;
 }
 
+// 这里返回的, 是 URL 所对应的 Reader, 也就是说, 不同的 Range, 返回的其实是一个 .
 - (KTVHCDataReader *)readerWithRequest:(KTVHCDataRequest *)request
 {
     if (!request || request.URL.absoluteString.length <= 0) {

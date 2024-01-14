@@ -35,10 +35,12 @@
     if (self = [super init]) {
         self.coreLock = [[NSRecursiveLock alloc] init];
         self.unitQueue = [[KTVHCDataUnitQueue alloc] initWithPath:[KTVHCPathTool archivePath]];
+        
         for (KTVHCDataUnit *obj in self.unitQueue.allUnits) {
             obj.delegate = self;
         }
         self.archiveQueue = dispatch_queue_create("KTVHTTPCache-archiveQueue", DISPATCH_QUEUE_SERIAL);
+        
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:) name:UIApplicationWillTerminateNotification object:nil];
         [[NSNotificationCenter defaultCenter]  addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
         [[NSNotificationCenter defaultCenter]  addObserver:self selector:@selector(applicationWillResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
@@ -251,7 +253,7 @@
 
 #pragma mark - UIApplicationWillTerminateNotification
 
-// 在 App 生命周期的各个时间, 进行了缓存的处理更新. 
+// 在 App 生命周期的各个时间, 进行了缓存的处理更新.
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
     [self archiveIfNeeded];

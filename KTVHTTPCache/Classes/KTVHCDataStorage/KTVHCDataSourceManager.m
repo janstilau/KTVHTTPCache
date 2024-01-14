@@ -55,13 +55,16 @@
         [self unlock];
         return;
     }
+    // 这里需要 记录一下 calledPrepare, 因为会有重复调用的可能.
     if (self.calledPrepare) {
         [self unlock];
         return;
     }
+    
     self->_calledPrepare = YES;
     KTVHCLogDataSourceManager(@"%p, Call prepare", self);
     KTVHCLogDataSourceManager(@"%p, Sort sources - Begin\nSources : %@", self, self.sources);
+    
     [self.sources sortUsingComparator:^NSComparisonResult(id <KTVHCDataSource> obj1, id <KTVHCDataSource> obj2) {
         if (obj1.range.start < obj2.range.start) {
             return NSOrderedAscending;
@@ -102,6 +105,8 @@
     self->_closed = YES;
     KTVHCLogDataSourceManager(@"%p, Call close", self);
     for (id <KTVHCDataSource> obj in self.sources) {
+        // 对于FileData 来说, 就是文件句柄的删除.
+        // 对于网络来说, 就是取消网络任务.
         [obj close];
     }
     [self unlock];
@@ -125,12 +130,16 @@
     // 使用 self.currentSource 来读取数据.
     NSData *data = [self.currentSource readDataOfLength:length];
     self->_readedLength += data.length;
+    
     KTVHCLogDataSourceManager(@"%p, Read data : %lld", self, (long long)data.length);
     if (self.currentSource.isFinished) {
         self.currentSource = [self nextSource];
         if (self.currentSource) {
             KTVHCLogDataSourceManager(@"%p, Switch to next source, %@", self, self.currentSource);
             if ([self.currentSource isKindOfClass:[KTVHCDataFileSource class]]) {
+                // 必须调用一下 prepare
+                // 如果是 File, 会出发本对象的回调, 触发 ReadDataOfLength 的方法
+                // 如果是 Net, 则会触发网络下载. 
                 [self.currentSource prepare];
             }
         } else {
@@ -142,6 +151,7 @@
     return data;
 }
 
+// 就是按照顺序来, 不管后面是 File 还是 Net
 - (id<KTVHCDataSource>)nextSource
 {
     NSUInteger index = [self.sources indexOfObject:self.currentSource] + 1;
