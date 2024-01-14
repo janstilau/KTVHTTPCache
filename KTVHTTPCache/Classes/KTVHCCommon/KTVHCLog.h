@@ -116,8 +116,10 @@ if (([KTVHCLog log].consoleLogEnable && console_log_enable) || ([KTVHCLog log].r
 /**
  *  Alloc & Dealloc
  */
-#define KTVHCLogAlloc(obj)                  KTVHCLogging(obj, KTVHCLogEnableValueConsoleLog(Alloc),   KTVHCLogEnableValueRecordLog(Alloc),   @"alloc")
-#define KTVHCLogDealloc(obj)                KTVHCLogging(obj, KTVHCLogEnableValueConsoleLog(Dealloc), KTVHCLogEnableValueRecordLog(Dealloc), @"dealloc")
+//#define KTVHCLogAlloc(obj) KTVHCLogging(obj, KTVHCLogEnableValueConsoleLog(Alloc),   KTVHCLogEnableValueRecordLog(Alloc),   @"alloc")
+//#define KTVHCLogDealloc(obj)                KTVHCLogging(obj, KTVHCLogEnableValueConsoleLog(Dealloc), KTVHCLogEnableValueRecordLog(Dealloc), @"dealloc")
+#define KTVHCLogAlloc(obj)
+#define KTVHCLogDealloc(obj)
 
 @interface KTVHCLog : NSObject
 
