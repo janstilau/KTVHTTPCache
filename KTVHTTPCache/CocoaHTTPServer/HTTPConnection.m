@@ -2538,6 +2538,9 @@ static NSMutableArray *recentNonces;
  * This method is called if the response encounters some critical error,
  * and it will be unable to fullfill the request.
 **/
+// Connection 和 Resp 是强绑定在一起的.
+// 这体现在, 对于某些 Resp 类, 在发送错误, 或者准备好数据之后, 是直接调用 Connection 中的方法, 将自己的事件通知过去的.
+// 这个本应该是通过 Delegate + 协议的方式实现, 不过, 现在就是直接调用了相关的方法. 
 - (void)responseDidAbort:(NSObject<HTTPResponse> *)sender
 {
 	HTTPLogTrace();

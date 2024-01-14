@@ -63,6 +63,9 @@
  * If you change the documentRoot while the server is running,
  * the change will affect future incoming http connections.
 **/
+/*
+ 对于 HttpServer 这个类来说, 他们原生默认的实现, 是一个 Http 的文件服务器. 
+ */
 - (NSString *)documentRoot;
 - (void)setDocumentRoot:(NSString *)value;
 

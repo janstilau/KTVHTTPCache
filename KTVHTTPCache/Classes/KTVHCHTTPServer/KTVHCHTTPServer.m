@@ -187,6 +187,7 @@
 
 #pragma mark - Background Task
 
+// 每次回到 App 之后, 都会重新 ping 一下服务器.
 - (void)applicationWillEnterForeground
 {
     dispatch_async(self.pingQueue, ^{

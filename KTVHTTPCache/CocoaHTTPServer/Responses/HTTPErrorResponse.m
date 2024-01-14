@@ -32,6 +32,7 @@
     return YES;
 }
 
+// 仅仅是这里, 就是返回一个特定的 httpCode 的值. 
 - (NSInteger) status {
     return _status;
 }

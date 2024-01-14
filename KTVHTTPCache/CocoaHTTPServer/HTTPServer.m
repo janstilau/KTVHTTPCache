@@ -28,10 +28,6 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_INFO; // | HTTP_LOG_FLAG_TRACE;
 
 @implementation HTTPServer
 
-/**
- * Standard Constructor.
- * Instantiates an HTTP server, but does not start it.
-**/
 - (id)init
 {
 	if ((self = [super init]))
@@ -51,6 +47,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_INFO; // | HTTP_LOG_FLAG_TRACE;
 		dispatch_queue_set_specific(connectionQueue, IsOnConnectionQueueKey, nonNullUnusedPointer, NULL);
 		
 		// Initialize underlying GCD based tcp socket
+        // 真正的底层实现, 是使用了 GCDAsyncSocket 这个类.
 		asyncSocket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:serverQueue];
 		
 		// Use default connection class of HTTPConnection
@@ -409,7 +406,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_INFO; // | HTTP_LOG_FLAG_TRACE;
 	__block NSError *err = nil;
 	
 	dispatch_sync(serverQueue, ^{ @autoreleasepool {
-		
+		// 使用这个方法, 来完成了服务器监听的目的.
 		success = [asyncSocket acceptOnInterface:interface port:port error:&err];
 		if (success)
 		{
@@ -552,6 +549,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_INFO; // | HTTP_LOG_FLAG_TRACE;
 	[connections addObject:newConnection];
 	[connectionsLock unlock];
 	
+    // 真正的请求, 是通过 HTTPConnection 来完成的业务处理. 
 	[newConnection start];
 }
 

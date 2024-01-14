@@ -87,6 +87,7 @@
     }
     KTVHCLogHTTPConnection(@"%p, Accept request\nURL : %@", self, URL);
     KTVHCDataRequest *dataRequest = [[KTVHCDataRequest alloc] initWithURL:URL headers:request.allHeaderFields];
+    // 如果是 m3u, 则是 HLS 的拆书, 有着特殊的方式. 
     if ([URLString containsString:@".m3u"]) {
         return [[KTVHCHTTPHLSResponse alloc] initWithConnection:self dataRequest:dataRequest];
     }

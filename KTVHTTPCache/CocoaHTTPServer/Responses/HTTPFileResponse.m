@@ -43,13 +43,12 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 			return nil;
 		}
 		
+        // 文件系统, 文件的长度是一个绕不过去的问题.
+        // 在启动的时候, 快速的将这个信息获取到.
 		fileLength = (UInt64)[[fileAttributes objectForKey:NSFileSize] unsignedLongLongValue];
 		fileOffset = 0;
 		
 		aborted = NO;
-		
-		// We don't bother opening the file here.
-		// If this is a HEAD request we only need to know the fileLength.
 	}
 	return self;
 }
@@ -66,6 +65,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 {
 	HTTPLogTrace();
 	
+    // 在和文件相关的逻辑里面, 使用句柄是一个非常非常经常的事情.
 	fileFD = open([filePath UTF8String], O_RDONLY);
 	if (fileFD == NULL_FD)
 	{
@@ -80,6 +80,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 	return YES;
 }
 
+// SetOffset 和 ReadData, 是 Connection 主动触发的方法.
+// 在这些方法里面, 才会做 Open File 的操作.
 - (BOOL)openFileIfNeeded
 {
 	if (aborted)
@@ -126,6 +128,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 	
 	fileOffset = offset;
 	
+    // 这里还是句柄的处理.
 	off_t result = lseek(fileFD, (off_t)offset, SEEK_SET);
 	if (result == -1)
 	{
@@ -152,7 +155,6 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 	// It is NOT OK to over-allocate the buffer.
 	
 	UInt64 bytesLeftInFile = fileLength - fileOffset;
-	
 	NSUInteger bytesToRead = (NSUInteger)MIN(length, bytesLeftInFile);
 	
 	// Make sure buffer is big enough for read request.

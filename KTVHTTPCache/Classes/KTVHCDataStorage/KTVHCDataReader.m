@@ -30,6 +30,7 @@
 {
     if (self = [super init]) {
         KTVHCLogAlloc(self);
+        // unit 是从 KTVHCDataUnitPool 里面提取的. 是一个公共资源.
         self.unit = [[KTVHCDataUnitPool pool] unitWithURL:request.URL];
         self->_request = [request newRequestWithTotalLength:self.unit.totalLength];
         self.coreLock = [[NSRecursiveLock alloc] init];
@@ -238,6 +239,7 @@
     if (self.isPrepared) {
         return;
     }
+    
     if (self.sourceManager.isPrepared && self.unit.totalLength > 0) {
         long long totalLength = self.unit.totalLength;
         KTVHCRange range = KTVHCRangeWithEnsureLength(self.request.range, totalLength);
